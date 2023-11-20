@@ -1,21 +1,35 @@
 import { useState } from 'react';
-import css from './Form.module.css';
+
 import { nanoid } from 'nanoid';
 
-export const Form = ({ addToContact }) => {
+import { useSelector, useDispatch } from 'react-redux';
+import { addContact } from 'redux/contacts/contacts.reducer';
+
+import css from './Form.module.css';
+
+export const Form = () => {
+  const dispatch = useDispatch();
+  const contacts = useSelector(state => state.contactsStore.contacts);
+
   const [name, setName] = useState('');
   const [number, setNumber] = useState('');
 
   const hendlerSubmit = e => {
     e.preventDefault();
-    addToContact({
-      name,
-      number,
-      id: nanoid(),
-    });
-
-    e.currentTarget.elements.name.value = '';
-    e.currentTarget.elements.number.value = '';
+    let isInList = contacts.some(
+      itemContact =>
+        itemContact.name.toLocaleLowerCase() === name.toLocaleLowerCase()
+    );
+    if (isInList) {
+      alert(`${name} is already in contacts!`);
+    } else {
+      addToContact({
+        name,
+        number,
+        id: nanoid(),
+      });
+      resetForm(e);
+    }
   };
 
   const handleChangeInput = event => {
@@ -30,6 +44,15 @@ export const Form = ({ addToContact }) => {
       default:
         break;
     }
+  };
+
+  const addToContact = item => {
+    dispatch(addContact(item));
+  };
+
+  const resetForm = e => {
+    e.currentTarget.elements.name.value = '';
+    e.currentTarget.elements.number.value = '';
   };
 
   return (
